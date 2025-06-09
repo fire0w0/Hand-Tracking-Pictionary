@@ -10,6 +10,7 @@ import org.bytedeco.opencv.opencv_java;
 
 
 public class Main extends JFrame {
+
     private VideoHand videoHand;
     public Main() {
         super("Hand Tracker");

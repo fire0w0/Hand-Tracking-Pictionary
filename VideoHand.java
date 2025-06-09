@@ -1,107 +1,81 @@
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import javax.swing.*;
+import org.opencv.core.*;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.Videoio;
 
-import org.bytedeco.javacv.*;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.opencv.opencv_core.IplImage;
+public class VideoHand extends JPanel {
+    static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 
-public class VideoHand extends JPanel implements Runnable {
     private static final int Width = 640;
     private static final int Length = 480;
     private static final int timebetween = 100;
     private static final int whichCamera = 0;
-    private Frame snapIm = null;
+    private Mat snapMat = new Mat();
+    private BufferedImage bufferedImage = null;
     private volatile boolean isRunning;
     private volatile boolean isFinished;
     private int imageCount = 0;
     private long totalTime = 0;
     private Font msgFont = new Font("SansSerif", Font.PLAIN, 12);
+    private VideoCapture capture;
 
-    private HandDetector handfinder = null;
 
     public VideoHand() {
         setBackground(Color.white);
         setPreferredSize(new Dimension(Width, Length));
         setLayout(new BorderLayout());
-        new Thread(this).start();
-
+        new Thread(this::run).start();
     }
 
-    private FrameGrabber startGrabber(int camera) throws FrameGrabber.Exception {
-        FrameGrabber grabber = null;
-        try {
-            grabber = FrameGrabber.createDefault(camera);
-        } catch (FrameGrabber.Exception e) {
-            System.err.println("Could not create FrameGrabber instance.");
-            throw new RuntimeException(e);
+    private BufferedImage matToBufferedImage(Mat mat) {
+        int type = BufferedImage.TYPE_BYTE_GRAY;
+        if (mat.channels() == 3) {
+            type = BufferedImage.TYPE_3BYTE_BGR;
         }
-        grabber.setFormat("dshow");       // using DirectShow
-        grabber.setImageWidth(WIDTH);     // default is too small: 320x240
-        grabber.setImageHeight(HEIGHT);
-        grabber.start();
-        return grabber;
+        int buffersize = mat.channels()*mat.cols()*mat.rows();
+        byte[] data = new byte[buffersize];
+        mat.get(0, 0, data);
+        BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), type);
+        final byte[] targetPixels = ((java.awt.image.DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        System.arraycopy(data, 0, targetPixels, 0, data.length);
+        return image;
     }
-
-    private Frame getSnapImage(FrameGrabber grabber, int ID) {
-        Frame snap = null;
-        try {
-            snap = grabber.grab();
-        } catch (FrameGrabber.Exception e) {
-            throw new RuntimeException(e);
-        }
-        return snap;
-    }
-
-    private void closeGrabber(FrameGrabber grabber, int ID) {
-        try {
-            grabber.stop();
-            grabber.release();
-        } catch (FrameGrabber.Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
 
     /* gpt worte this part just temporary to see if stuff works*/
         @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        if (snapIm != null) {
-            // Convert JavaCV Frame to Java Image
-            Java2DFrameConverter converter = new Java2DFrameConverter();
-            Image img = converter.getBufferedImage(snapIm);
-
-            if (img != null) {
-                g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (bufferedImage != null) {
+                g.drawImage(bufferedImage, 0, 0, getWidth(), getHeight(), this);
+            } else {
+                g.setColor(Color.BLACK);
+                g.setFont(msgFont);
+                g.drawString("No image", 10, 20);
             }
-        } else {
-            // Draw a "No Image" message if there's nothing to display yet
-            g.setColor(Color.BLACK);
-            g.setFont(msgFont);
-            g.drawString("No image", 10, 20);
         }
-    }
 
 
     /* insert display stuff here when doable*/
 
     public void run() {
-        FrameGrabber videograbber = null;
-        try {
-            videograbber = startGrabber(whichCamera);
-        } catch (FrameGrabber.Exception e) {
-            throw new RuntimeException(e);
-        }
-        /* insert detector stuff here*/
+        capture = new VideoCapture(whichCamera);
+        capture.set(Videoio.CAP_PROP_FRAME_WIDTH, Width);
+        capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, Length);
+
         long duration;
         isRunning = true;
         isFinished = false;
+
         while (isRunning) {
             long startTime = System.currentTimeMillis();
-            snapIm = getSnapImage(videograbber, whichCamera);
-            imageCount++;
+            boolean grabbed = capture.read(snapMat);
+            if (grabbed) {
+                bufferedImage = matToBufferedImage(snapMat);
+            }
             repaint();
 
             /* insert more handdetector stuff here */
@@ -114,22 +88,23 @@ public class VideoHand extends JPanel implements Runnable {
                 catch (Exception ex) {}
             }
         }
-        closeGrabber(videograbber, whichCamera);
-        isFinished = true;
+        capture.release();
+        isRunning = false;
+
     }
 
 
 
 
 
-    public void closeDown()
-    {
+    public void closeDown() {
         isRunning = false;
         while (!isFinished) {
             try {
                 Thread.sleep(timebetween);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
             }
-            catch (Exception ex) {}
         }
     }
 
