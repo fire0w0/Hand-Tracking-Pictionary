@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import javax.swing.*;
 import org.opencv.core.*;
@@ -9,21 +10,25 @@ import org.opencv.videoio.Videoio;
 public class VideoHand extends JPanel {
     static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 
-    private static final int Width = 640;
-    private static final int Length = 480;
-    private static final int timebetween = 100;
+    private static int Width;
+    private static int Length;
+    private static final int timebetween = 50;
     private static final int whichCamera = 0;
     private Mat snapMat = new Mat();
     private BufferedImage bufferedImage = null;
     private volatile boolean isRunning;
     private volatile boolean isFinished;
-    private int imageCount = 0;
     private long totalTime = 0;
     private Font msgFont = new Font("SansSerif", Font.PLAIN, 12);
     private VideoCapture capture;
-
+    private HandDetector detector = null;
+    private BufferedImage binaryBufferedImage = null;
 
     public VideoHand() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Width = screenSize.width;
+        Length = screenSize.height;
+
         setBackground(Color.white);
         setPreferredSize(new Dimension(Width, Length));
         setLayout(new BorderLayout());
@@ -46,17 +51,39 @@ public class VideoHand extends JPanel {
 
 
     /* gpt worte this part just temporary to see if stuff works*/
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (bufferedImage != null) {
-                g.drawImage(bufferedImage, 0, 0, getWidth(), getHeight(), this);
-            } else {
-                g.setColor(Color.BLACK);
-                g.setFont(msgFont);
-                g.drawString("No image", 10, 20);
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+
+        if (bufferedImage != null && binaryBufferedImage != null) {
+            // Divide the panel horizontally: left = color, right = binary
+            int halfWidth = panelWidth / 2;
+
+            // Draw the color image on the left
+            g.drawImage(bufferedImage, 0, 0, halfWidth, panelHeight, this);
+
+            // Draw the binary image on the right
+            g.drawImage(binaryBufferedImage, halfWidth, 0, halfWidth, panelHeight, this);
+
+            if (detector != null) {
+                // Draw hand position overlay on the color image
+                float scaleX = (float) halfWidth / bufferedImage.getWidth();
+                float scaleY = (float) panelHeight / bufferedImage.getHeight();
+                Graphics2D g2 = (Graphics2D) g;
+                g2.translate(0, 0); // left side, no offset
+                detector.draw(g2, scaleX, scaleY);
             }
+
+        } else {
+            g.setColor(Color.BLACK);
+            g.setFont(msgFont);
+            g.drawString("No image", 10, 20);
         }
+    }
+
+
 
 
     /* insert display stuff here when doable*/
@@ -66,6 +93,7 @@ public class VideoHand extends JPanel {
         capture.set(Videoio.CAP_PROP_FRAME_WIDTH, Width);
         capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, Length);
 
+        detector = new HandDetector("gloveHSV.txt", Width, Length);
         long duration;
         isRunning = true;
         isFinished = false;
@@ -73,10 +101,39 @@ public class VideoHand extends JPanel {
         while (isRunning) {
             long startTime = System.currentTimeMillis();
             boolean grabbed = capture.read(snapMat);
+            Core.flip(snapMat, snapMat, 1);
             if (grabbed) {
                 bufferedImage = matToBufferedImage(snapMat);
             }
+            detector.detect(snapMat);
+
+            // After detector.detect(snapMat);
+            int imageX = detector.center.x;
+            int imageY = detector.center.y;
+
+            int panelWidth = getWidth();
+            int panelHeight = getHeight();
+
+            float scaleX = (float) panelWidth / bufferedImage.getWidth();
+            float scaleY = (float) panelHeight / bufferedImage.getHeight();
+
+            int panelX = (int)(imageX * scaleX);
+            int panelY = (int)(imageY * scaleY);
+
+            try {
+                Robot robot = new Robot();
+                Point panelOnScreen = this.getLocationOnScreen();
+                int screenX = panelOnScreen.x + panelX;
+                int screenY = panelOnScreen.y + panelY;
+
+                robot.mouseMove(screenX, screenY);
+            } catch (AWTException e) {
+                e.printStackTrace();
+            }
+
+            binaryBufferedImage = matToBufferedImage(detector.getBinaryImage());
             repaint();
+
 
             /* insert more handdetector stuff here */
             duration = System.currentTimeMillis() - startTime;
@@ -92,9 +149,6 @@ public class VideoHand extends JPanel {
         isRunning = false;
 
     }
-
-
-
 
 
     public void closeDown() {

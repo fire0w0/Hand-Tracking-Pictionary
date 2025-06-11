@@ -1,15 +1,12 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.io.*;
-
-import org.bytedeco.javacv.*;
-import org.bytedeco.javacpp.Loader;
-import org.bytedeco.opencv.opencv_core.IplImage;
-import org.bytedeco.opencv.opencv_java;
-
 
 public class Main extends JFrame {
+
+
+
+
 
     private VideoHand videoHand;
     public Main() {
@@ -28,5 +25,11 @@ public class Main extends JFrame {
 
     public static void main(String[] args) {
         new Main();
+        /*SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new PaintGui().setVisible(true);
+            }
+        });*/
     }
 }
