@@ -12,7 +12,7 @@ public class VideoHand extends JPanel {
 
     private static int Width;
     private static int Length;
-    private static final int timebetween = 50;
+    private static final int timebetween = 1;
     private static final int whichCamera = 0;
     private Mat snapMat = new Mat();
     private BufferedImage bufferedImage = null;
@@ -51,38 +51,30 @@ public class VideoHand extends JPanel {
 
 
     /* gpt worte this part just temporary to see if stuff works*/
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        int panelWidth = getWidth();
-        int panelHeight = getHeight();
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (bufferedImage != null) {
+                int panelWidth = getWidth();
+                int panelHeight = getHeight();
 
-        if (bufferedImage != null && binaryBufferedImage != null) {
-            // Divide the panel horizontally: left = color, right = binary
-            int halfWidth = panelWidth / 2;
+                // Draw the image stretched to fit panel size
+                g.drawImage(bufferedImage, 0, 0, panelWidth, panelHeight, this);
 
-            // Draw the color image on the left
-            g.drawImage(bufferedImage, 0, 0, halfWidth, panelHeight, this);
+                if (detector != null) {
+                    // Calculate scale factors between displayed size and image size
+                    float scaleX = (float) panelWidth / bufferedImage.getWidth();
+                    float scaleY = (float) panelHeight / bufferedImage.getHeight();
 
-            // Draw the binary image on the right
-            g.drawImage(binaryBufferedImage, halfWidth, 0, halfWidth, panelHeight, this);
-
-            if (detector != null) {
-                // Draw hand position overlay on the color image
-                float scaleX = (float) halfWidth / bufferedImage.getWidth();
-                float scaleY = (float) panelHeight / bufferedImage.getHeight();
-                Graphics2D g2 = (Graphics2D) g;
-                g2.translate(0, 0); // left side, no offset
-                detector.draw(g2, scaleX, scaleY);
+                    // Pass scale factors to draw method
+                    detector.draw(g, scaleX, scaleY);
+                }
+            } else {
+                g.setColor(Color.BLACK);
+                g.setFont(msgFont);
+                g.drawString("No image", 10, 20);
             }
-
-        } else {
-            g.setColor(Color.BLACK);
-            g.setFont(msgFont);
-            g.drawString("No image", 10, 20);
         }
-    }
-
 
 
 

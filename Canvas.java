@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -24,6 +25,8 @@ public class Canvas extends JPanel{
     // canvas width and height
     private int canvasWidth, canvasHeight;
 
+    boolean dDown = false;
+
 
     public Canvas(int targetWidth, int targetHeight){
         super();
@@ -38,10 +41,56 @@ public class Canvas extends JPanel{
         canvasHeight = targetHeight;
 
 
+        JComponent root = this; // or your canvas
+
+        InputMap inputMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = root.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke('D'), "draw");
+
+        actionMap.put("draw", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Color c = JColorChooser.showDialog(null, "Select a color", Color.BLACK);
+                //if (c != null) {
+                    //this.setColor(c);
+
+                dDown = !dDown; // change ddown to the opposite of what is was before
+
+                if(dDown == false)
+                {
+                    currentPath = null;
+                }
+
+                Point screenPoint = MouseInfo.getPointerInfo().getLocation();
+                SwingUtilities.convertPointFromScreen(screenPoint, Canvas.this); // make it relative to the canvas
+                int x = screenPoint.x;
+                int y = screenPoint.y;
+                    System.out.print(y + "jjjjjjjjj");
+                    System.out.print(x);
+                //}
+
+                //draw in current mouse location
+                Graphics g = getGraphics();
+                g.setColor(color);
+                g.fillRect(x, y, STROKE_SIZE, STROKE_SIZE);
+                g.dispose();
+
+
+                // start current path
+                currentPath = new ArrayList<>(25);
+                currentPath.add(new ColorPoint(x, y, color));
+
+
+            }
+        });
+
+
+
         MouseAdapter na = new MouseAdapter(){
             @Override
             public void mousePressed(MouseEvent e){
-                // get current mouse lcation
+                // get current mouse location
                 x = e.getX();
                 y = e.getY();
 
@@ -69,31 +118,36 @@ public class Canvas extends JPanel{
 
 
             @Override
-            public void mouseDragged(MouseEvent e) {
+            public void mouseMoved(MouseEvent e) {
                 // get current location
-                x = e.getX();
-                y = e.getY();
+
+                if(dDown == true) {
 
 
-                // used to be able to draw a line
-                Graphics2D g2d = (Graphics2D) getGraphics();
-                g2d.setColor(color);
-                if(!currentPath.isEmpty()){
-                    ColorPoint prevPoint = currentPath.get(currentPath.size() - 1);
-                    g2d.setStroke(new BasicStroke(STROKE_SIZE));
+                    x = e.getX();
+                    y = e.getY();
 
 
-                    // connect the current point to the previous point to draw a line
-                    g2d.drawLine(prevPoint.getX(), prevPoint.getY(), x, y);
+                    // used to be able to draw a line
+                    Graphics2D g2d = (Graphics2D) getGraphics();
+                    g2d.setColor(color);
+                    if (!currentPath.isEmpty()) {
+                        ColorPoint prevPoint = currentPath.get(currentPath.size() - 1);
+                        g2d.setStroke(new BasicStroke(STROKE_SIZE));
 
 
+                        // connect the current point to the previous point to draw a line
+                        g2d.drawLine(prevPoint.getX(), prevPoint.getY(), x, y);
+
+
+                    }
+                    g2d.dispose();
+
+
+                    // add the new point to the path
+                    ColorPoint nextPoint = new ColorPoint(e.getX(), e.getY(), color);
+                    currentPath.add(nextPoint);
                 }
-                g2d.dispose();
-
-
-                // add the new point to the path
-                ColorPoint nextPoint = new ColorPoint(e.getX(), e.getY(), color);
-                currentPath.add(nextPoint);
             }
         };
 

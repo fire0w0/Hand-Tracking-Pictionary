@@ -23,13 +23,14 @@ public class Main extends JFrame {
         setVisible(true);
     }
 
-    public static void main(String[] args) {
-        new Main();
-        /*SwingUtilities.invokeLater(new Runnable() {
+    public static void main(String[] args) throws AWTException {
+        //new Main();
+
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 new PaintGui().setVisible(true);
             }
-        });*/
+        });
     }
 }

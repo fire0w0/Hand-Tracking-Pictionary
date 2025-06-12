@@ -10,10 +10,6 @@ public class PaintGui extends JFrame {
         setPreferredSize(new Dimension(1500, 1000));
         pack();
         setLocationRelativeTo(null);
-
-
-
-
         addGuiComponents();
     }
 
@@ -32,6 +28,64 @@ public class PaintGui extends JFrame {
 
 
         // 2. Color Chooser
+
+        JComponent root = canvas; // or your canvas
+
+        InputMap inputMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = root.getActionMap();
+
+        //final boolean[] colorChooserOpen = {false};
+
+        JColorChooser colorChooser = new JColorChooser();
+        JDialog dialog = JColorChooser.createDialog(
+                canvas,                 // parent component
+                "Choose a Color",     // dialog title
+                false,                 // modal
+                colorChooser,         // color chooser component
+                e -> {
+                    Color c = colorChooser.getColor();
+                    if(c != null) {
+                        canvas.setColor(c);  // set color of brush
+                    }
+
+                },
+                null                  // Cancel listener (can also add one)
+        );
+
+        inputMap.put(KeyStroke.getKeyStroke('P'), "openColorPicker");
+        actionMap.put("openColorPicker", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                if (dialog.isVisible()) {
+                    dialog.setVisible(false);
+                    return;
+                }
+
+                dialog.setVisible(true);
+                /*else if(dialog.isShowing()){
+                    dialog.dispose();
+                    //colorChooserOpen[0] = false;
+                    System.out.println("this should say false: " + dialog.isShowing());
+                }*/
+            }
+        });
+
+        // Close Paint Dialog
+        inputMap.put(KeyStroke.getKeyStroke('O'), "closeDialog");
+
+
+        actionMap.put("closeDialog", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                    dialog.setVisible(false);
+                    System.out.println("dialog setvisibled to false");
+            }
+        });
+
+
+
         JButton chooseColorButton = new JButton("Choose color");
         chooseColorButton.addActionListener(new ActionListener() {
             @Override
@@ -46,7 +100,21 @@ public class PaintGui extends JFrame {
         springLayout.putConstraint(SpringLayout.WEST, chooseColorButton, 25, SpringLayout.WEST, canvasPanel);
 
 
+
+
         // 3. Reset Button
+
+        inputMap.put(KeyStroke.getKeyStroke('R'), "reset");
+
+
+        actionMap.put("reset", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.resetCanvas();
+            }
+        });
+
         JButton resetButton= new JButton("Reset");
         resetButton.addActionListener(new ActionListener(){
             @Override
@@ -55,11 +123,17 @@ public class PaintGui extends JFrame {
             }
         });
         canvasPanel.add(resetButton);
-        springLayout.putConstraint(SpringLayout.NORTH, resetButton, 10, SpringLayout.NORTH, canvasPanel);
-        springLayout.putConstraint(SpringLayout.WEST, resetButton, 150, SpringLayout.WEST, canvasPanel);
+        //springLayout.putConstraint(SpringLayout.NORTH, resetButton, 10, SpringLayout.NORTH, canvasPanel);
+        //springLayout.putConstraint(SpringLayout.WEST, resetButton, 150, SpringLayout.WEST, canvasPanel);
         springLayout.putConstraint(SpringLayout.NORTH, resetButton, 10, SpringLayout.NORTH, canvasPanel);
         springLayout.putConstraint(SpringLayout.WEST, resetButton, 275, SpringLayout.WEST, canvasPanel);
 
+        // Description for which shortcuts to do stuff
+
+        JLabel instructionsLabel = new JLabel("Shift + D to start and stop drawing \n Shift + R to reset the canvas \n Shift + P to open color picker");
+        canvasPanel.add(instructionsLabel);
+        springLayout.putConstraint(SpringLayout.NORTH, instructionsLabel, 10, SpringLayout.NORTH, canvasPanel);
+        springLayout.putConstraint(SpringLayout.WEST, instructionsLabel, 525, SpringLayout.WEST, canvasPanel);
 
 
 

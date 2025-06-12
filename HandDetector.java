@@ -84,7 +84,7 @@ public class HandDetector {
         Imgproc.cvtColor(scaledImage, recolouredImage, Imgproc.COLOR_BGR2HSV);
         Core.inRange(recolouredImage,
                 new Scalar(0, 0, 0),
-                new Scalar(179, 255, 50),
+                new Scalar(179, 255, 80),
                 binaryImage);
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(7,7));
         Imgproc.morphologyEx(binaryImage, binaryImage, Imgproc.MORPH_OPEN, kernel);
