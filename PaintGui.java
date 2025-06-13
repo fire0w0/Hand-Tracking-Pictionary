@@ -55,27 +55,29 @@ public class PaintGui extends JFrame {
                 null                  // Cancel listener (can also add one)
         );
 
-        inputMap.put(KeyStroke.getKeyStroke('P'), "openColorPicker");
-        actionMap.put("openColorPicker", new AbstractAction() {
+        inputMap.put(KeyStroke.getKeyStroke('-'), "increase");
+        actionMap.put("increase", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                canvas.decrease();
 
-                if (dialog.isVisible()) {
-                    dialog.setVisible(false);
-                    return;
-                }
-
-                dialog.setVisible(true);
-                /*else if(dialog.isShowing()){
-                    dialog.dispose();
-                    //colorChooserOpen[0] = false;
-                    System.out.println("this should say false: " + dialog.isShowing());
-                }*/
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke('T'), "openColorPicker");
-        actionMap.put("openColorPicker", new AbstractAction() {
+
+        inputMap.put(KeyStroke.getKeyStroke('+'), "decrease");
+        actionMap.put("decrease", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.increase();
+
+            }
+        });
+
+
+
+        inputMap.put(KeyStroke.getKeyStroke('T'), "starttracking");
+        actionMap.put("starttracking", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 videoHand.toggletracker();
@@ -137,14 +139,14 @@ public class PaintGui extends JFrame {
         //springLayout.putConstraint(SpringLayout.NORTH, resetButton, 10, SpringLayout.NORTH, canvasPanel);
         //springLayout.putConstraint(SpringLayout.WEST, resetButton, 150, SpringLayout.WEST, canvasPanel);
         springLayout.putConstraint(SpringLayout.NORTH, resetButton, 10, SpringLayout.NORTH, canvasPanel);
-        springLayout.putConstraint(SpringLayout.WEST, resetButton, 275, SpringLayout.WEST, canvasPanel);
+        springLayout.putConstraint(SpringLayout.WEST, resetButton, 200, SpringLayout.WEST, canvasPanel);
 
         // Description for which shortcuts to do stuff
 
-        JLabel instructionsLabel = new JLabel("Shift + D to start and stop drawing \n Shift + R to reset the canvas \n Shift + P to open color picker");
+        JLabel instructionsLabel = new JLabel("Shift + D to start and stop drawing, Shift + T to start tracking, + / - to increase / decrease stroke size");
         canvasPanel.add(instructionsLabel);
         springLayout.putConstraint(SpringLayout.NORTH, instructionsLabel, 10, SpringLayout.NORTH, canvasPanel);
-        springLayout.putConstraint(SpringLayout.WEST, instructionsLabel, 525, SpringLayout.WEST, canvasPanel);
+        springLayout.putConstraint(SpringLayout.WEST, instructionsLabel, 380, SpringLayout.WEST, canvasPanel);
 
 
 

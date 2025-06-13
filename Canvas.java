@@ -11,7 +11,7 @@ import java.awt.Graphics2D;
 public class Canvas extends JPanel{
 
 
-    private final static int STROKE_SIZE = 8; // CHANGE STROKE SIZE HERE
+    private static int STROKE_SIZE = 8; // CHANGE STROKE SIZE HERE
 
 
     // used to draw a line between points
@@ -163,6 +163,15 @@ public class Canvas extends JPanel{
         this.color = color;
     }
 
+    public void increase(){
+        STROKE_SIZE += 2;
+    }
+
+    public void decrease(){
+        if (STROKE_SIZE != 2){
+            STROKE_SIZE -= 2;
+        }
+    }
 
     public void resetCanvas(){
         // clear all rectangles

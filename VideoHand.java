@@ -1,12 +1,10 @@
 import java.awt.*;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
-import javax.swing.*;
 import org.opencv.core.*;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
-public class VideoHand extends JPanel {
+public class VideoHand{
     static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 
     private static int Width;
@@ -28,9 +26,6 @@ public class VideoHand extends JPanel {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Width = screenSize.width;
         Length = screenSize.height;
-        setBackground(Color.white);
-        setPreferredSize(new Dimension(Width, Length));
-        setLayout(new BorderLayout());
         new Thread(this::run).start();
     }
 
@@ -53,31 +48,6 @@ public class VideoHand extends JPanel {
         return image;
     }
 
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (bufferedImage != null) {
-                int panelWidth = getWidth();
-                int panelHeight = getHeight();
-
-                // Draw the image stretched to fit panel size
-                g.drawImage(bufferedImage, 0, 0, panelWidth, panelHeight, this);
-
-                if (detector != null) {
-                    // Calculate scale factors between displayed size and image size
-                    float scaleX = (float) panelWidth / bufferedImage.getWidth();
-                    float scaleY = (float) panelHeight / bufferedImage.getHeight();
-
-                    // Pass scale factors to draw method
-                    detector.draw(g, scaleX, scaleY);
-                }
-            } else {
-                g.setColor(Color.BLACK);
-                g.setFont(msgFont);
-                g.drawString("No image", 10, 20);
-            }
-        }
 
     public void run() {
         capture = new VideoCapture(whichCamera);
@@ -102,30 +72,19 @@ public class VideoHand extends JPanel {
             int imageX = detector.center.x;
             int imageY = detector.center.y;
 
-            int panelWidth = getWidth();
-            int panelHeight = getHeight();
-
-            float scaleX = (float) panelWidth / bufferedImage.getWidth();
-            float scaleY = (float) panelHeight / bufferedImage.getHeight();
-
-            int panelX = (int)(imageX * scaleX);
-            int panelY = (int)(imageY * scaleY);
 
             if (tracking) {
                 try {
                     Robot robot = new Robot();
-                    Point panelOnScreen = this.getLocationOnScreen();
-                    int screenX = panelOnScreen.x + panelX;
-                    int screenY = panelOnScreen.y + panelY;
 
-                    robot.mouseMove(screenX, screenY);
+                    robot.mouseMove(imageX, imageY);
                 } catch (AWTException e) {
                     e.printStackTrace();
                 }
             }
 
             binaryBufferedImage = matToBufferedImage(detector.getBinaryImage());
-            repaint();
+
 
             duration = System.currentTimeMillis() - startTime;
             totalTime += duration;

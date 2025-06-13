@@ -10,17 +10,14 @@ import org.opencv.imgproc.Imgproc;
 public class HandDetector {
     private static final int Scale = 2;
     private static final float SmallestArea = 400.0f;
-    private static final int Max_Points = 20;
     private final int smoothingWindow = 10;
     private final List<Point> recentCenters = new ArrayList<>();
-
+    public float maxArea;
     private Mat scaledImage;
     private Mat recolouredImage;
     private Mat binaryImage;
 
     private Font msgFont;
-    private Point smoothedCenter = new Point(0, 0);
-    private final double smoothingFactor = 0.2; // between 0 and 1 — lower = smoother
     Point center;
 
     public HandDetector(String Colour, int width, int height) {
@@ -55,7 +52,7 @@ public class HandDetector {
         Mat hierarchy = new Mat();
         Imgproc.findContours(binaryImage, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
         MatOfPoint largestContour = null;
-        float maxArea = SmallestArea;
+        maxArea = SmallestArea;
         for (MatOfPoint contour : contours) {
             RotatedRect box = Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray()));
             Size size = box.size;
@@ -72,7 +69,8 @@ public class HandDetector {
         return binaryImage;
     }
 
-    private void extractContourInfo(MatOfPoint bigCountour, int scale) {
+    private void extractContourInfo(MatOfPoint bigCountour, int
+            scale) {
         Rect boundingRect = Imgproc.boundingRect(bigCountour);
         int xCenter = (boundingRect.x + boundingRect.width / 2) * scale;
         int yCenter = (boundingRect.y + boundingRect.height / 2) * scale;
@@ -86,7 +84,7 @@ public class HandDetector {
                 new Scalar(0, 0, 0),
                 new Scalar(179, 255, 80),
                 binaryImage);
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(7,7));
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5,5));
         Imgproc.morphologyEx(binaryImage, binaryImage, Imgproc.MORPH_OPEN, kernel);
         MatOfPoint bigContour = findBiggestContour(binaryImage);
         if (bigContour == null)
