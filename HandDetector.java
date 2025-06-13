@@ -11,7 +11,7 @@ public class HandDetector {
     private static final int Scale = 2;
     private static final float SmallestArea = 400.0f;
     private static final int Max_Points = 20;
-    private final int smoothingWindow = 5;
+    private final int smoothingWindow = 10;
     private final List<Point> recentCenters = new ArrayList<>();
 
     private Mat scaledImage;
@@ -19,7 +19,8 @@ public class HandDetector {
     private Mat binaryImage;
 
     private Font msgFont;
-
+    private Point smoothedCenter = new Point(0, 0);
+    private final double smoothingFactor = 0.2; // between 0 and 1 — lower = smoother
     Point center;
 
     public HandDetector(String Colour, int width, int height) {
@@ -34,8 +35,7 @@ public class HandDetector {
 
     private Point getSmoothedCenter(Point newCenter) {
         recentCenters.add(new Point(newCenter));
-        if (Math.abs(recentCenters.getLast().x - newCenter.x) > 300  && Math.abs(recentCenters.getLast().y - newCenter.y) > 300) {
-
+        if (Math.abs(recentCenters.getLast().x - newCenter.x) > 500  && Math.abs(recentCenters.getLast().y - newCenter.y) > 500) {
             return recentCenters.getLast();
         }
         if (recentCenters.size() > smoothingWindow) {

@@ -4,9 +4,12 @@ import java.awt.event.*;
 
 
 public class PaintGui extends JFrame {
-    public PaintGui(){
+    private final VideoHand videoHand;
+
+    public PaintGui(VideoHand videoHand){
         super("Paint GUI");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.videoHand = videoHand;
         setPreferredSize(new Dimension(1500, 1000));
         pack();
         setLocationRelativeTo(null);
@@ -68,6 +71,14 @@ public class PaintGui extends JFrame {
                     //colorChooserOpen[0] = false;
                     System.out.println("this should say false: " + dialog.isShowing());
                 }*/
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke('T'), "openColorPicker");
+        actionMap.put("openColorPicker", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                videoHand.toggletracker();
             }
         });
 

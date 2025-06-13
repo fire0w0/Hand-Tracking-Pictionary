@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.*;
 import org.opencv.core.*;
 import org.opencv.videoio.VideoCapture;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.Videoio;
 
 public class VideoHand extends JPanel {
@@ -23,17 +22,22 @@ public class VideoHand extends JPanel {
     private VideoCapture capture;
     private HandDetector detector = null;
     private BufferedImage binaryBufferedImage = null;
+    private boolean tracking = false;
 
     public VideoHand() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Width = screenSize.width;
         Length = screenSize.height;
-
         setBackground(Color.white);
         setPreferredSize(new Dimension(Width, Length));
         setLayout(new BorderLayout());
         new Thread(this::run).start();
     }
+
+    public void toggletracker(){
+        tracking = !tracking;
+    }
+
 
     private BufferedImage matToBufferedImage(Mat mat) {
         int type = BufferedImage.TYPE_BYTE_GRAY;
@@ -50,7 +54,6 @@ public class VideoHand extends JPanel {
     }
 
 
-    /* gpt worte this part just temporary to see if stuff works*/
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -75,10 +78,6 @@ public class VideoHand extends JPanel {
                 g.drawString("No image", 10, 20);
             }
         }
-
-
-
-    /* insert display stuff here when doable*/
 
     public void run() {
         capture = new VideoCapture(whichCamera);
@@ -112,22 +111,22 @@ public class VideoHand extends JPanel {
             int panelX = (int)(imageX * scaleX);
             int panelY = (int)(imageY * scaleY);
 
-            try {
-                Robot robot = new Robot();
-                Point panelOnScreen = this.getLocationOnScreen();
-                int screenX = panelOnScreen.x + panelX;
-                int screenY = panelOnScreen.y + panelY;
+            if (tracking) {
+                try {
+                    Robot robot = new Robot();
+                    Point panelOnScreen = this.getLocationOnScreen();
+                    int screenX = panelOnScreen.x + panelX;
+                    int screenY = panelOnScreen.y + panelY;
 
-                robot.mouseMove(screenX, screenY);
-            } catch (AWTException e) {
-                e.printStackTrace();
+                    robot.mouseMove(screenX, screenY);
+                } catch (AWTException e) {
+                    e.printStackTrace();
+                }
             }
 
             binaryBufferedImage = matToBufferedImage(detector.getBinaryImage());
             repaint();
 
-
-            /* insert more handdetector stuff here */
             duration = System.currentTimeMillis() - startTime;
             totalTime += duration;
             if (duration < timebetween){

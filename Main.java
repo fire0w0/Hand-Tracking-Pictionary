@@ -8,7 +8,7 @@ public class Main extends JFrame {
 
 
 
-    private VideoHand videoHand;
+    public VideoHand videoHand;
     public Main() {
         super("Hand Tracker");
         Container c = getContentPane();
@@ -24,12 +24,11 @@ public class Main extends JFrame {
     }
 
     public static void main(String[] args) throws AWTException {
-        //new Main();
-
+        Main mainWindow = new Main(); // this creates videoHand
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new PaintGui().setVisible(true);
+                new PaintGui(mainWindow.videoHand).setVisible(true);
             }
         });
     }
