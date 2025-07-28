@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 
 public class PaintGui extends JFrame {
@@ -27,7 +29,10 @@ public class PaintGui extends JFrame {
         // 1. Canvas
         Canvas canvas = new Canvas(1500, 950);
         canvasPanel.add(canvas);
-        springLayout.putConstraint(SpringLayout.NORTH, canvas, 50, SpringLayout.NORTH, canvasPanel);
+        springLayout.putConstraint(SpringLayout.NORTH, canvas, 100, SpringLayout.NORTH, canvasPanel);
+        springLayout.putConstraint(SpringLayout.WEST, canvas, 100, SpringLayout.WEST, canvasPanel);
+        springLayout.putConstraint(SpringLayout.EAST, canvas, -100, SpringLayout.EAST, canvasPanel);
+        springLayout.putConstraint(SpringLayout.SOUTH, canvas, -100, SpringLayout.SOUTH, canvasPanel);
 
 
         // 2. Color Chooser
@@ -39,7 +44,7 @@ public class PaintGui extends JFrame {
 
         //final boolean[] colorChooserOpen = {false};
 
-        JColorChooser colorChooser = new JColorChooser();
+        /*JColorChooser colorChooser = new JColorChooser();
         JDialog dialog = JColorChooser.createDialog(
                 canvas,                 // parent component
                 "Choose a Color",     // dialog title
@@ -53,7 +58,7 @@ public class PaintGui extends JFrame {
 
                 },
                 null                  // Cancel listener (can also add one)
-        );
+        );*/
 
         inputMap.put(KeyStroke.getKeyStroke('-'), "increase");
         actionMap.put("increase", new AbstractAction() {
@@ -84,8 +89,48 @@ public class PaintGui extends JFrame {
             }
         });
 
+        ArrayList<String> prompts = new ArrayList<>();
+
+        prompts.add("Airplane");
+        prompts.add("Elephant");
+        prompts.add("Pineapple");
+        prompts.add("Robot");
+        prompts.add("Volcano");
+        prompts.add("Pirate");
+        prompts.add("Snowman");
+        prompts.add("Guitar");
+        prompts.add("Castle");
+        prompts.add("Rocket");
+        prompts.add("Mr. Dutton");
+
+        Random random = new Random();
+
+        JLabel pictionaryLabel = new JLabel("Press Shift + G to generate a pictionary prompt (it will disappear after a 2 seconds)");
+        canvasPanel.add(pictionaryLabel);
+        springLayout.putConstraint(SpringLayout.NORTH, pictionaryLabel, 50, SpringLayout.NORTH, canvasPanel);
+        springLayout.putConstraint(SpringLayout.WEST, pictionaryLabel, 380, SpringLayout.WEST, canvasPanel);
+        inputMap.put(KeyStroke.getKeyStroke('G'), "generatePrompt");
+        actionMap.put("generatePrompt", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pictionaryLabel.setText(prompts.get(random.nextInt(12)));
+
+                Timer clearTimer = new Timer(2000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        pictionaryLabel.setText("Press Shift + G to generate a pictionary prompt (it will disappear after a 2 seconds)"); // Clear the label text
+                    }
+                });
+
+                clearTimer.setRepeats(false); // Make sure it only runs once
+                clearTimer.start();
+
+
+            }
+        });
+
         // Close Paint Dialog
-        inputMap.put(KeyStroke.getKeyStroke('O'), "closeDialog");
+        /*inputMap.put(KeyStroke.getKeyStroke('O'), "closeDialog");
 
 
         actionMap.put("closeDialog", new AbstractAction() {
@@ -95,7 +140,7 @@ public class PaintGui extends JFrame {
                     dialog.setVisible(false);
                     System.out.println("dialog setvisibled to false");
             }
-        });
+        });*/
 
 
 

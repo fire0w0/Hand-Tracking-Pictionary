@@ -12,7 +12,9 @@ public class HandDetector {
     private static final float SmallestArea = 400.0f;
     private final int smoothingWindow = 10;
     private final List<Point> recentCenters = new ArrayList<>();
+    private final VideoHand videoHand;
     public float maxArea;
+    public float prevArea;
     private Mat scaledImage;
     private Mat recolouredImage;
     private Mat binaryImage;
@@ -20,7 +22,8 @@ public class HandDetector {
     private Font msgFont;
     Point center;
 
-    public HandDetector(String Colour, int width, int height) {
+    public HandDetector(String Colour, int width, int height, VideoHand videoHand) {
+        this.videoHand = videoHand;
         scaledImage = new Mat(height / Scale, width / Scale, org.opencv.core.CvType.CV_8UC3);
         recolouredImage = new Mat(height / Scale, width / Scale, org.opencv.core.CvType.CV_8UC3);
         binaryImage = new Mat(height / Scale, width / Scale, org.opencv.core.CvType.CV_8UC1);
@@ -62,6 +65,7 @@ public class HandDetector {
                 largestContour = contour;
             }
         }
+
         return largestContour;
     }
 

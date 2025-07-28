@@ -35,6 +35,7 @@ public class VideoHand{
 
 
     private BufferedImage matToBufferedImage(Mat mat) {
+
         int type = BufferedImage.TYPE_BYTE_GRAY;
         if (mat.channels() == 3) {
             type = BufferedImage.TYPE_3BYTE_BGR;
@@ -54,7 +55,7 @@ public class VideoHand{
         capture.set(Videoio.CAP_PROP_FRAME_WIDTH, Width);
         capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, Length);
 
-        detector = new HandDetector("gloveHSV.txt", Width, Length);
+        detector = new HandDetector("gloveHSV.txt", Width, Length, Main.videoHand);
         long duration;
         isRunning = true;
         isFinished = false;
